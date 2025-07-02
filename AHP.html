@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPK AHP Pemilihan Rumah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Sistem Pendukung Keputusan Pemilihan Rumah - Metode AHP</h1>
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <label class="block font-medium">Jumlah Kriteria</label>
+        <input id="jumlahKriteria" type="number" value="3" class="border p-2 w-full rounded">
+      </div>
+      <div>
+        <label class="block font-medium">Jumlah Alternatif</label>
+        <input id="jumlahAlternatif" type="number" value="3" class="border p-2 w-full rounded">
+      </div>
+    </div>
+    <div class="text-center mb-6">
+      <button onclick="buatForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
+        Buat Formulir AHP
+      </button>
+    </div>
+
+    <div id="formInput" class="space-y-4"></div>
+    <div id="matriksKriteria" class="mt-8"></div>
+    <div id="matriksAlternatif" class="mt-8"></div>
+    <div id="hasilAkhir" class="mt-8"></div>
+  </div>
+
+  <script>
+    let namaKriteria = [], namaAlternatif = [];
+
+    function buatForm() {
+      const jK = +document.getElementById('jumlahKriteria').value;
+      const jA = +document.getElementById('jumlahAlternatif').value;
+      const form = document.getElementById('formInput');
+      form.innerHTML = '';
+
+      let html = '<h2 class="font-bold">Nama Kriteria</h2><div class="grid grid-cols-2 gap-2">';
+      for (let i = 0; i < jK; i++) {
+        html += `<input id="k-${i}" type="text" placeholder="Kriteria ${i+1}" class="border p-2 rounded">`;
+      }
+      html += '</div>';
+
+      html += '<h2 class="font-bold mt-4">Nama Alternatif</h2><div class="grid grid-cols-2 gap-2">';
+      for (let i = 0; i < jA; i++) {
+        html += `<input id="a-${i}" type="text" placeholder="Alternatif ${i+1}" class="border p-2 rounded">`;
+      }
+      html += '</div>';
+
+      html += `<div class="text-center mt-4">
+        <button onclick="buatMatriks(${jK}, ${jA})" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">
+          Lanjutkan Perbandingan
+        </button>
+      </div>`;
+
+      form.innerHTML = html;
+    }
+
+    function buatMatriks(jK, jA) {
+      namaKriteria = [], namaAlternatif = [];
+      for (let i = 0; i < jK; i++) namaKriteria.push(document.getElementById(`k-${i}`).value || `K${i+1}`);
+      for (let i = 0; i < jA; i++) namaAlternatif.push(document.getElementById(`a-${i}`).value || `A${i+1}`);
+
+      const kontainerK = document.getElementById('matriksKriteria');
+      let htmlK = `<h2 class="font-semibold mb-2">Perbandingan Kriteria</h2><table class="w-full text-sm text-center border">
+        <thead><tr><th class="border">-</th>${namaKriteria.map(k => `<th class="border">${k}</th>`).join('')}</tr></thead><tbody>`;
+      for (let i = 0; i < jK; i++) {
+        htmlK += `<tr><th class="border">${namaKriteria[i]}</th>`;
+        for (let j = 0; j < jK; j++) {
+          const val = i === j ? 1 : '';
+          const ro = i === j ? 'readonly' : '';
+          htmlK += `<td class="border"><input id="mk-${i}-${j}" type="number" step="any" class="w-full text-center" value="${val}" ${ro}></td>`;
+        }
+        htmlK += `</tr>`;
+      }
+      htmlK += '</tbody></table>';
+      kontainerK.innerHTML = htmlK;
+
+      const kontainerA = document.getElementById('matriksAlternatif');
+      kontainerA.innerHTML = '';
+      for (let k = 0; k < jK; k++) {
+        let htmlA = `<h3 class="font-medium mt-6">Perbandingan Alternatif berdasarkan <span class='text-blue-700'>${namaKriteria[k]}</span></h3>`;
+        htmlA += `<table class="w-full text-sm text-center border">
+          <thead><tr><th class="border">-</th>${namaAlternatif.map(a => `<th class="border">${a}</th>`).join('')}</tr></thead><tbody>`;
+        for (let i = 0; i < jA; i++) {
+          htmlA += `<tr><th class="border">${namaAlternatif[i]}</th>`;
+          for (let j = 0; j < jA; j++) {
+            const val = i === j ? 1 : '';
+            const ro = i === j ? 'readonly' : '';
+            htmlA += `<td class="border"><input id="ma-${k}-${i}-${j}" type="number" step="any" value="${val}" ${ro} class="w-full text-center"></td>`;
+          }
+          htmlA += '</tr>';
+        }
+        htmlA += '</tbody></table>';
+        kontainerA.innerHTML += htmlA;
+      }
+
+      kontainerA.innerHTML += `<div class="text-center mt-4">
+        <button onclick="hitungAHP(${jK}, ${jA})" class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-2 rounded">
+          Hitung Hasil
+        </button>
+      </div>`;
+    }
+
+    function hitungAHP(jK, jA) {
+      const mk = Array.from({length: jK}, (_, i) =>
+        Array.from({length: jK}, (_, j) => parseFloat(document.getElementById(`mk-${i}-${j}`).value) || 1)
+      );
+      const kolomK = mk[0].map((_, j) => mk.reduce((sum, row) => sum + row[j], 0));
+      const normK = mk.map(row => row.map((val, j) => val / kolomK[j]));
+      const bobotK = normK.map(row => row.reduce((a,b) => a+b,0)/jK);
+
+      const semuaBobotAlternatif = [];
+      for (let k = 0; k < jK; k++) {
+        const ma = Array.from({length: jA}, (_, i) =>
+          Array.from({length: jA}, (_, j) => parseFloat(document.getElementById(`ma-${k}-${i}-${j}`).value) || 1)
+        );
+        const kolomA = ma[0].map((_, j) => ma.reduce((sum, row) => sum + row[j], 0));
+        const normA = ma.map(row => row.map((val, j) => val / kolomA[j]));
+        const bobotA = normA.map(row => row.reduce((a,b)=>a+b,0)/jA);
+        semuaBobotAlternatif.push(bobotA);
+      }
+
+      let skorAkhir = Array(jA).fill(0);
+      for (let i = 0; i < jA; i++) {
+        for (let k = 0; k < jK; k++) {
+          skorAkhir[i] += semuaBobotAlternatif[k][i] * bobotK[k];
+        }
+      }
+
+      let hasil = `<h2 class='text-xl font-bold mb-2'>Hasil Akhir Pemilihan Rumah</h2><table class='w-full text-sm text-center border'><thead><tr><th class='border'>Alternatif</th><th class='border'>Skor</th></tr></thead><tbody>`;
+      namaAlternatif.forEach((alt, i) => {
+        hasil += `<tr><td class='border'>${alt}</td><td class='border'>${skorAkhir[i].toFixed(4)}</td></tr>`;
+      });
+      hasil += '</tbody></table>';
+
+      const terbaik = namaAlternatif[skorAkhir.indexOf(Math.max(...skorAkhir))];
+      hasil += `<p class='mt-3 font-semibold text-green-600'>Alternatif terbaik adalah: <span class='underline'>${terbaik}</span></p>`;
+      document.getElementById('hasilAkhir').innerHTML = hasil;
+    }
+  </script>
+</body>
+</html>

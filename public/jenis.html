@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alur Perhitungan Metode SAW - Pemilihan Rumah</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Load MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #1e5799 0%, #207cca 51%, #2989d8 100%);
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        padding: 30px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #eaeaea;
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-top: -10px;
+      }
+
+      header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      header h2 {
+        font-size: 1.8rem;
+        font-weight: 400;
+        color: #f8f8f8;
+      }
+
+      .description {
+        background-color: #e3f2fd;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border-left: 5px solid #2196f3;
+      }
+
+      .description h3 {
+        color: #1565c0;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .description p {
+        margin-bottom: 10px;
+      }
+
+      .calculation-section {
+        background-color: #f9f9f9;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .calculation-section h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eaeaea;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .step {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid #4caf50;
+      }
+
+      .step h4 {
+        color: #2e7d32;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .step-content {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-family: 'Courier New', monospace;
+      }
+
+      .matrix {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .matrix th,
+      .matrix td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+      }
+
+      .matrix th {
+        background: linear-gradient(to bottom, #2c3e50, #1a2530);
+        color: white;
+        font-weight: 500;
+      }
+
+      .matrix tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .matrix tr:hover {
+        background-color: #f1f8e9;
+      }
+
+      .formula {
+        font-family: 'Cambria Math', serif;
+        font-size: 1.2em;
+        padding: 15px;
+        background-color: #fffde7;
+        border-radius: 8px;
+        margin: 15px 0;
+        text-align: center;
+      }
+
+      .calculation {
+        padding: 15px;
+        background-color: #e8f5e9;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+        line-height: 1.8;
+      }
+
+      .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .results-table th,
+      .results-table td {
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+      }
+
+      .results-table th {
+        background: linear-gradient(to bottom, #2c3e50, #1a2530);
+        color: white;
+        font-weight: 500;
+      }
+
+      .results-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      .results-table tr:hover {
+        background-color: #f1f8e9;
+      }
+
+      .rank-1 {
+        background-color: #e8f5e9 !important;
+        font-weight: bold;
+        color: #2e7d32;
+      }
+
+      .final-score {
+        font-weight: bold;
+        color: #2e7d32;
+        font-size: 1.1em;
+      }
+
+      .recommendation {
+        background: linear-gradient(to right, #e8f5e9, #c8e6c9);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 25px;
+        border-left: 5px solid #4caf50;
+        text-align: center;
+      }
+
+      .recommendation h4 {
+        color: #2e7d32;
+        font-size: 1.4em;
+        margin-bottom: 15px;
+      }
+
+      .best-alternative {
+        font-size: 1.6em;
+        color: #1b5e20;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        color: #777;
+        font-size: 0.9em;
+        border-top: 1px solid #eee;
+      }
+
+      .highlight {
+        background-color: #fff9c4;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-weight: bold;
+      }
+
+      .step-number {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 30px;
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .matrix,
+        .results-table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1><i class="fas fa-calculator"></i> Alur Perhitungan Metode SAW</h1>
+        <h2>Pemilihan Rumah Terbaik</h2>
+      </header>
+
+      <div class="description">
+        <h3><i class="fas fa-info-circle"></i> Metode SAW (Simple Additive Weighting)</h3>
+        <p>Metode SAW adalah metode pengambilan keputusan multi-kriteria dengan cara mencari penjumlahan terbobot dari rating kinerja pada setiap alternatif pada semua atribut.</p>
+        <p>Alur perhitungan:</p>
+        <p>1. Normalisasi matriks keputusan</p>
+        <p>2. Perhitungan matriks normalisasi terbobot</p>
+        <p>3. Perankingan alternatif berdasarkan nilai preferensi</p>
+      </div>
+
+      <div class="calculation-section">
+        <h3><i class="fas fa-list-alt"></i> Data Awal</h3>
+
+        <div class="step">
+          <h4><i class="fas fa-table"></i> Matriks Keputusan</h4>
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th>Alternatif / Kriteria</th>
+                <th>C1 (Benefit)</th>
+                <th>C2 (Benefit)</th>
+                <th>C3 (Benefit)</th>
+                <th>C4 (Benefit)</th>
+                <th>C5 (Benefit)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>A1 (Perumahan Asri)</td>
+                <td>0.5</td>
+                <td>1</td>
+                <td>0.7</td>
+                <td>0.7</td>
+                <td>0.8</td>
+              </tr>
+              <tr>
+                <td>A2 (Perumahan GreenPark)</td>
+                <td>0.8</td>
+                <td>0.7</td>
+                <td>1</td>
+                <td>0.5</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>A3 (Perumahan CitraLand)</td>
+                <td>1</td>
+                <td>0.3</td>
+                <td>0.4</td>
+                <td>0.7</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>A4 (Perumahan Royal Spring)</td>
+                <td>0.2</td>
+                <td>1</td>
+                <td>0.5</td>
+                <td>0.9</td>
+                <td>0.7</td>
+              </tr>
+              <tr>
+                <td>A5 (Perumahan Garden City)</td>
+                <td>1</td>
+                <td>0.7</td>
+                <td>0.4</td>
+                <td>0.7</td>
+                <td>1</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="step-content">
+            <p><strong>Bobot Kriteria:</strong> W = [0.3, 0.2, 0.2, 0.15, 0.15]</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="calculation-section">
+        <h3><i class="fas fa-calculator"></i> Alur Perhitungan</h3>
+
+        <div class="step">
+          <h4><span class="step-number">1</span> Normalisasi Matriks R</h4>
+
+          <div class="formula">\[ r_{ij} = \frac{x_{ij}}{\max(x_j)} \quad \text{(untuk kriteria benefit)} \] \[ r_{ij} = \frac{\min(x_j)}{x_{ij}} \quad \text{(untuk kriteria cost)} \]</div>
+
+          <div class="calculation">
+            <p><strong>Perhitungan untuk Kriteria C1 (Benefit):</strong></p>
+            <p>Nilai maksimum C1 = max{0.5; 0.8; 1; 0.2; 1} = 1</p>
+            <p>\[ r_{11} = \frac{0.5}{1} = 0.5 \]</p>
+            <p>\[ r_{21} = \frac{0.8}{1} = 0.8 \]</p>
+            <p>\[ r_{31} = \frac{1}{1} = 1 \]</p>
+            <p>\[ r_{41} = \frac{0.2}{1} = 0.2 \]</p>
+            <p>\[ r_{51} = \frac{1}{1} = 1 \]</p>
+
+            <p><strong>Perhitungan untuk Kriteria C2 (Benefit):</strong></p>
+            <p>Nilai maksimum C2 = max{1; 0.7; 0.3; 1; 0.7} = 1</p>
+            <p>\[ r_{12} = \frac{1}{1} = 1 \]</p>
+            <p>\[ r_{22} = \frac{0.7}{1} = 0.7 \]</p>
+            <p>\[ r_{32} = \frac{0.3}{1} = 0.3 \]</p>
+            <p>\[ r_{42} = \frac{1}{1} = 1 \]</p>
+            <p>\[ r_{52} = \frac{0.7}{1} = 0.7 \]</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <h4><span class="step-number">2</span> Hasil Normalisasi Matriks R</h4>
+
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th>Alternatif / Kriteria</th>
+                <th>C1</th>
+                <th>C2</th>
+                <th>C3</th>
+                <th>C4</th>
+                <th>C5</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>A1</td>
+                <td>0.5000</td>
+                <td>1.0000</td>
+                <td>0.7000</td>
+                <td>0.7143</td>
+                <td>0.8750</td>
+              </tr>
+              <tr>
+                <td>A2</td>
+                <td>0.8000</td>
+                <td>0.7000</td>
+                <td>1.0000</td>
+                <td>1.0000</td>
+                <td>0.7000</td>
+              </tr>
+              <tr>
+                <td>A3</td>
+                <td>1.0000</td>
+                <td>0.3000</td>
+                <td>0.4000</td>
+                <td>0.7143</td>
+                <td>0.7000</td>
+              </tr>
+              <tr>
+                <td>A4</td>
+                <td>0.2000</td>
+                <td>1.0000</td>
+                <td>0.5000</td>
+                <td>0.5556</td>
+                <td>1.0000</td>
+              </tr>
+              <tr>
+                <td>A5</td>
+                <td>1.0000</td>
+                <td>0.7000</td>
+                <td>0.4000</td>
+                <td>0.7143</td>
+                <td>0.7000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="step">
+          <h4><span class="step-number">3</span> Proses Perankingan</h4>
+
+          <div class="formula">\[ V_i = \sum_{j=1}^{n} (w_j \times r_{ij}) \]</div>
+
+          <div class="calculation">
+            <p><strong>Perhitungan untuk Alternatif A1:</strong></p>
+            <p>\[ V_1 = (0.3 \times 0.5) + (0.2 \times 1) + (0.2 \times 0.7) + (0.15 \times 0.7143) + (0.15 \times 0.875) \]</p>
+            <p>\[ V_1 = 0.1500 + 0.2000 + 0.1400 + 0.1071 + 0.1313 = 0.7284 \]</p>
+
+            <p><strong>Perhitungan untuk Alternatif A2:</strong></p>
+            <p>\[ V_2 = (0.3 \times 0.8) + (0.2 \times 0.7) + (0.2 \times 1) + (0.15 \times 1) + (0.15 \times 0.7) \]</p>
+            <p>\[ V_2 = 0.2400 + 0.1400 + 0.2000 + 0.1500 + 0.1050 = 0.8350 \]</p>
+
+            <p><strong>Perhitungan untuk Alternatif A3:</strong></p>
+            <p>\[ V_3 = (0.3 \times 1) + (0.2 \times 0.3) + (0.2 \times 0.4) + (0.15 \times 0.7143) + (0.15 \times 0.7) \]</p>
+            <p>\[ V_3 = 0.3000 + 0.0600 + 0.0800 + 0.1071 + 0.1050 = 0.6521 \]</p>
+
+            <p><strong>Perhitungan untuk Alternatif A4:</strong></p>
+            <p>\[ V_4 = (0.3 \times 0.2) + (0.2 \times 1) + (0.2 \times 0.5) + (0.15 \times 0.5556) + (0.15 \times 1) \]</p>
+            <p>\[ V_4 = 0.0600 + 0.2000 + 0.1000 + 0.0833 + 0.1500 = 0.5933 \]</p>
+
+            <p><strong>Perhitungan untuk Alternatif A5:</strong></p>
+            <p>\[ V_5 = (0.3 \times 1) + (0.2 \times 0.7) + (0.2 \times 0.4) + (0.15 \times 0.7143) + (0.15 \times 0.7) \]</p>
+            <p>\[ V_5 = 0.3000 + 0.1400 + 0.0800 + 0.1071 + 0.1050 = 0.7321 \]</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <h4><span class="step-number">4</span> Hasil Perankingan</h4>
+
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Peringkat</th>
+                <th>Alternatif</th>
+                <th>Nama Perumahan</th>
+                <th>Skor Akhir (V)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="rank-1">
+                <td>1</td>
+                <td>A2</td>
+                <td>Perumahan GreenPark</td>
+                <td class="final-score">0.8350</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>A5</td>
+                <td>Perumahan Garden City</td>
+                <td class="final-score">0.7321</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>A1</td>
+                <td>Perumahan Asri</td>
+                <td class="final-score">0.7284</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>A3</td>
+                <td>Perumahan CitraLand</td>
+                <td class="final-score">0.6521</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>A4</td>
+                <td>Perumahan Royal Spring</td>
+                <td class="final-score">0.5933</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="recommendation">
+        <h4><i class="fas fa-trophy"></i> Rekomendasi Terbaik</h4>
+        <p>Berdasarkan perhitungan dengan metode SAW, rumah terbaik untuk Anda adalah:</p>
+        <p class="best-alternative">Perumahan GreenPark (A2)</p>
+        <p>dengan skor akhir <span class="highlight">0.8350</span></p>
+      </div>
+
+      <div class="footer">
+        <p>Sistem Pendukung Keputusan Pemilihan Rumah &copy; 2023 | Metode SAW (Simple Additive Weighting)</p>
+      </div>
+    </div>
+  </body>
+</html>
