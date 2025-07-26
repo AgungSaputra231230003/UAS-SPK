@@ -1,5 +1,3 @@
-// script.js
-
 document.addEventListener('DOMContentLoaded', function () {
   // Elemen DOM
   const criteriaContainer = document.getElementById('criteria-container');
@@ -14,6 +12,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const bestAlternativeEl = document.getElementById('best-alternative');
   const bestScoreEl = document.getElementById('best-score');
   const recommendationEl = document.getElementById('recommendation');
+
+  // Fasilitas yang tersedia
+  const facilityOptions = [
+    { id: 'taman', label: 'Taman Belakang', value: 1 },
+    { id: 'wc', label: 'WC dalam Kamar', value: 2 },
+    { id: 'garasi', label: 'Garasi Mobil', value: 3 },
+    { id: 'kolam', label: 'Kolam Renang', value: 4 },
+    { id: 'gym', label: 'Gym', value: 5 },
+    { id: 'dapur', label: 'Dapur Modern', value: 6 },
+  ];
 
   // Event Listeners
   addcriteriaBtn.addEventListener('click', addcriteria);
@@ -84,19 +92,55 @@ document.addEventListener('DOMContentLoaded', function () {
       const NamaCriteria = criteria.querySelector('.nama-criteria').value;
       const unit = criteria.querySelector('.criteria-unit').value || '';
 
-      const valueInput = document.createElement('input');
-      valueInput.type = 'number';
+      // Jika kriteria adalah Fasilitas, buat checkbox
+      if (NamaCriteria.toLowerCase() === 'fasilitas') {
+        const facilityContainer = document.createElement('div');
+        facilityContainer.className = 'facility-container';
 
-      //untuk menentukan placeholder berdasarkan nama kriteria dan satuan
-      if (unit) {
-        valueInput.placeholder = `${NamaCriteria} (${unit})`;
+        const label = document.createElement('p');
+        label.style.marginBottom = '10px';
+        label.textContent = 'Fasilitas:';
+        facilityContainer.appendChild(label);
+
+        const facilitiesDiv = document.createElement('div');
+        facilitiesDiv.className = 'facilities-container';
+
+        facilityOptions.forEach((facility, i) => {
+          const facilityOption = document.createElement('div');
+          facilityOption.className = 'facility-option';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = `facility-new-${i}`;
+          checkbox.className = 'facility-checkbox';
+
+          const label = document.createElement('label');
+          label.htmlFor = `facility-new-${i}`;
+          label.textContent = facility.label;
+
+          facilityOption.appendChild(checkbox);
+          facilityOption.appendChild(label);
+          facilitiesDiv.appendChild(facilityOption);
+        });
+
+        facilityContainer.appendChild(facilitiesDiv);
+        valuesDiv.appendChild(facilityContainer);
       } else {
-        valueInput.placeholder = NamaCriteria;
-      }
+        // Untuk kriteria lainnya, buat input number biasa
+        const valueInput = document.createElement('input');
+        valueInput.type = 'number';
 
-      valueInput.className = 'alternative-value';
-      valueInput.dataset.CriteriaIndex = index;
-      valuesDiv.appendChild(valueInput);
+        // Tentukan placeholder berdasarkan nama kriteria dan satuan
+        if (unit) {
+          valueInput.placeholder = `${NamaCriteria} (${unit})`;
+        } else {
+          valueInput.placeholder = NamaCriteria;
+        }
+
+        valueInput.className = 'alternative-value';
+        valueInput.dataset.CriteriaIndex = index;
+        valuesDiv.appendChild(valueInput);
+      }
     });
 
     const removeBtn = document.createElement('button');
@@ -124,12 +168,22 @@ document.addEventListener('DOMContentLoaded', function () {
       const currentValues = [];
 
       // Simpan nilai yang sudah ada
-      const existingInputs = valuesDiv.querySelectorAll('.alternative-value');
+      const existingInputs = valuesDiv.querySelectorAll('.alternative-value, .facility-container');
       existingInputs.forEach((input) => {
-        currentValues.push({
-          value: input.value,
-          placeholder: input.placeholder,
-        });
+        if (input.classList.contains('facility-container')) {
+          const checkboxes = input.querySelectorAll('.facility-checkbox');
+          const checkedValues = Array.from(checkboxes).map((cb) => cb.checked);
+          currentValues.push({
+            type: 'facility',
+            values: checkedValues,
+          });
+        } else {
+          currentValues.push({
+            type: 'value',
+            value: input.value,
+            placeholder: input.placeholder,
+          });
+        }
       });
 
       valuesDiv.innerHTML = '';
@@ -138,25 +192,66 @@ document.addEventListener('DOMContentLoaded', function () {
         const NamaCriteria = criteria.querySelector('.nama-criteria').value;
         const unit = criteria.querySelector('.criteria-unit').value || '';
 
-        const valueInput = document.createElement('input');
-        valueInput.type = 'number';
+        // Jika kriteria adalah Fasilitas, buat checkbox
+        if (NamaCriteria.toLowerCase() === 'fasilitas') {
+          const facilityContainer = document.createElement('div');
+          facilityContainer.className = 'facility-container';
 
-        // Tentukan placeholder berdasarkan nama kriteria dan satuan
-        if (unit) {
-          valueInput.placeholder = `${NamaCriteria} (${unit})`;
+          const label = document.createElement('p');
+          label.style.marginBottom = '10px';
+          label.textContent = 'Fasilitas:';
+          facilityContainer.appendChild(label);
+
+          const facilitiesDiv = document.createElement('div');
+          facilitiesDiv.className = 'facilities-container';
+
+          facilityOptions.forEach((facility, i) => {
+            const facilityOption = document.createElement('div');
+            facilityOption.className = 'facility-option';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `facility-${alternativeDivs.length}-${i}`;
+            checkbox.className = 'facility-checkbox';
+
+            // Set nilai checkbox jika ada data sebelumnya
+            if (currentValues[index]?.type === 'facility' && currentValues[index].values[i]) {
+              checkbox.checked = true;
+            }
+
+            const label = document.createElement('label');
+            label.htmlFor = `facility-${alternativeDivs.length}-${i}`;
+            label.textContent = facility.label;
+
+            facilityOption.appendChild(checkbox);
+            facilityOption.appendChild(label);
+            facilitiesDiv.appendChild(facilityOption);
+          });
+
+          facilityContainer.appendChild(facilitiesDiv);
+          valuesDiv.appendChild(facilityContainer);
         } else {
-          valueInput.placeholder = NamaCriteria;
+          // Untuk kriteria lainnya, buat input number biasa
+          const valueInput = document.createElement('input');
+          valueInput.type = 'number';
+
+          // Tentukan placeholder berdasarkan nama kriteria dan satuan
+          if (unit) {
+            valueInput.placeholder = `${NamaCriteria} (${unit})`;
+          } else {
+            valueInput.placeholder = NamaCriteria;
+          }
+
+          valueInput.className = 'alternative-value';
+          valueInput.dataset.CriteriaIndex = index;
+
+          // Pertahankan nilai yang sudah ada jika masih sesuai
+          if (currentValues[index]?.type === 'value') {
+            valueInput.value = currentValues[index].value;
+          }
+
+          valuesDiv.appendChild(valueInput);
         }
-
-        valueInput.className = 'alternative-value';
-        valueInput.dataset.CriteriaIndex = index;
-
-        // Pertahankan nilai yang sudah ada jika masih sesuai
-        if (currentValues[index] !== undefined) {
-          valueInput.value = currentValues[index].value;
-        }
-
-        valuesDiv.appendChild(valueInput);
       });
     });
   }
@@ -196,16 +291,28 @@ document.addEventListener('DOMContentLoaded', function () {
       const name = alternativeDiv.querySelector('.alternative-name').value || `Alternatif ${altIndex + 1}`;
       const values = [];
 
-      const valueInputs = alternativeDiv.querySelectorAll('.alternative-value');
-      valueInputs.forEach((input, critIndex) => {
-        let value = parseFloat(input.value) || 0;
+      const criteriaDivs = criteriaContainer.querySelectorAll('.criteria');
+      criteriaDivs.forEach((criteriaDiv, critIndex) => {
+        const NamaCriteria = criteriaDiv.querySelector('.nama-criteria').value;
 
-        // Konversi ke satuan yang sesuai jika kriteria adalah harga
-        if (criteria[critIndex]?.unit === 'juta') {
-          value = value * 1000000; // Konversi juta ke rupiah
+        // Jika kriteria adalah Fasilitas, hitung jumlah fasilitas yang dipilih
+        if (NamaCriteria.toLowerCase() === 'fasilitas') {
+          const facilityContainer = alternativeDiv.querySelector('.facility-container');
+          const checkboxes = facilityContainer.querySelectorAll('.facility-checkbox');
+          const checkedCount = Array.from(checkboxes).filter((cb) => cb.checked).length;
+          values.push(checkedCount);
+        } else {
+          // Untuk kriteria lainnya, ambil nilai dari input number
+          const valueInputs = alternativeDiv.querySelectorAll('.alternative-value');
+          let value = parseFloat(valueInputs[critIndex]?.value) || 0;
+
+          // Konversi ke satuan yang sesuai jika kriteria adalah harga
+          if (criteria[critIndex]?.unit === 'juta') {
+            value = value * 1000000; // Konversi juta ke rupiah
+          }
+
+          values.push(value);
         }
-
-        values.push(value);
       });
 
       alternatives.push({
@@ -323,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
   }
 
-  // Buat tabel matriks (DENGAN PERBAIKAN UNTUK PERSENTASE)
+  // Buat tabel matriks
   function createMatrixTable(items, criteriaArray, valueType, rowHeader) {
     if (criteriaArray.length === 0 || items.length === 0) return '<p>Tidak ada data</p>';
 
@@ -349,12 +456,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const criteria = criteriaArray[index];
         let displayValue;
 
-        // PERBAIKAN: Format khusus untuk nilai persentase
+        // Format khusus untuk nilai persentase
         if (criteria.unit === '%') {
-          // Untuk persentase, gunakan 2 digit di belakang koma
           displayValue = (value * 100).toFixed(2) + '%';
         } else {
-          // Untuk nilai lainnya, gunakan 4 digit di belakang koma
           displayValue = value.toFixed(4);
         }
 
